@@ -11,5 +11,6 @@ python2 tools/infer_simple.py \
 ```
 
 Về cơ bản mình chỉ cần quan tâm chữ "demo", chính là tham số truyền vô thư mục mà mình lưu ảnh, và "--output-dir /tmp/dectectron..." ở trên là truyền vô thư mục kết quả xuất ra. 
+Tuy nhiên để tiện thì đã có file run.sh ở bên trong sẵn rồi, trong đó thư mục mặc định input là demo và output-dir là demo/output cho nên test nhanh thì cứ chỉnh trong run.sh
 
 Để sử dụng cho mục đích nghiên cứu của nhóm mình thì file infer_simple.py của anh Tú cũng sẽ được add vào file README này sớm.
