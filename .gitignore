@@ -2,6 +2,7 @@ detectron/*
 
 !detectron/run.sh
 !detectron/demo
+!detectron/tools
 !detectron/detectron/*
 detectron/detectron/*
 !detectron/detectron/utils/*

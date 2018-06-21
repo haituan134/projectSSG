@@ -91,6 +91,10 @@ def parse_args():
         sys.exit(1)
     return parser.parse_args()
 
+def get_class_string(class_index, dataset):
+    class_text = dataset.classes[class_index] if dataset is not None else \
+        'id{:d}'.format(class_index)
+    return class_text 
 
 def main(args):
     logger = logging.getLogger(__name__)
@@ -127,20 +131,33 @@ def main(args):
                 'rest (caches and auto-tuning need to warm up)'
             )
 
-        vis_utils.vis_one_image(
-            im[:, :, ::-1],  # BGR -> RGB for visualization
-            im_name,
-            args.output_dir,
-            cls_boxes,
-            cls_segms,
-            cls_keyps,
-            dataset=dummy_coco_dataset,
-            box_alpha=0.3,
-            show_class=True,
-            thresh=0.7,
-            kp_thresh=2
-        )
+        # vis_utils.vis_one_image(
+        #     im[:, :, ::-1],  # BGR -> RGB for visualization
+        #     im_name,
+        #     args.output_dir,
+        #     cls_boxes,
+        #     cls_segms,
+        #     cls_keyps,
+        #     dataset=dummy_coco_dataset,
+        #     box_alpha=0.3,
+        #     show_class=True,
+	    # thresh=0.7,
+	    # kp_thresh=2
+        # )
 
+        import pycocotools.mask as mask_util
+        boxes, segms, keypoints, classes = vis_utils.convert_from_cls_format(cls_boxes, cls_segms, cls_keyps)
+        if segms is not None and len(segms) > 0: 
+           score = boxes[:, -1]
+           index = [i for i,_sc in enumerate(score) if _sc > 0.7]
+           mask = mask_util.decode(segms)
+           for i in index:
+              class_text = get_class_string(classes[i], dummy_coco_dataset) 
+              if not (os.path.exists('{}/{}'.format(args.output_dir, class_text))):
+                  os.mkdir('{}/{}'.format(args.output_dir, class_text))
+              cv2.imwrite('{}/{}/{}_{}.jpg'.format(args.output_dir, class_text,im_name.split('/')[-1][:-4], i), mask[:,:,i] * 255.0)
+              print(class_text);
+	
 
 if __name__ == '__main__':
     workspace.GlobalInit(['caffe2', '--caffe2_log_level=0'])

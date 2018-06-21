@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python2 tools/infer_simple.py \
+python2 tools/thang_infer_simple.py \
     --cfg configs/12_2017_baselines/e2e_mask_rcnn_R-101-FPN_2x.yaml \
     --output-dir demo/output\
     --image-ext jpg \

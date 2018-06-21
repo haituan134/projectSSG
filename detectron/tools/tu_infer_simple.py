@@ -101,45 +101,65 @@ def main(args):
     model = infer_engine.initialize_model_from_cfg(args.weights)
     dummy_coco_dataset = dummy_datasets.get_coco_dataset()
 
-    if os.path.isdir(args.im_or_folder):
-        im_list = glob.iglob(args.im_or_folder + '/*.' + args.image_ext)
-    else:
-        im_list = [args.im_or_folder]
+    # if os.path.isdir(args.im_or_folder):
+        # im_list = glob.iglob(args.im_or_folder + '/*.' + args.image_ext)
+    # else:
+        # im_list = [args.im_or_folder]
 
-    for i, im_name in enumerate(im_list):
-        out_name = os.path.join(
-            args.output_dir, '{}'.format(os.path.basename(im_name) + '.pdf')
-        )
-        logger.info('Processing {} -> {}'.format(im_name, out_name))
-        im = cv2.imread(im_name)
-        timers = defaultdict(Timer)
-        t = time.time()
-        with c2_utils.NamedCudaScope(0):
-            cls_boxes, cls_segms, cls_keyps = infer_engine.im_detect_all(
-                model, im, None, timers=timers
+    for fold in os.listdir(args.im_or_folder):
+        _fold = os.path.join(args.im_or_folder, fold)
+        if os.path.isdir(_fold):
+            im_list = glob.iglob(_fold + '/*.' + args.image_ext)
+        else:
+            im_list = [args.im_or_folder]
+        output_dir = os.path.join(args.output_dir, fold)
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
+        for i, im_name in enumerate(im_list):
+            out_name = os.path.join(
+                output_dir, '{}'.format(os.path.basename(im_name) + '.pdf')
             )
-        logger.info('Inference time: {:.3f}s'.format(time.time() - t))
-        for k, v in timers.items():
-            logger.info(' | {}: {:.3f}s'.format(k, v.average_time))
-        if i == 0:
-            logger.info(
-                ' \ Note: inference on the first image will be slower than the '
-                'rest (caches and auto-tuning need to warm up)'
+            logger.info('Processing {} -> {}'.format(im_name, out_name))
+            im = cv2.imread(im_name)
+            timers = defaultdict(Timer)
+            t = time.time()
+            with c2_utils.NamedCudaScope(0):
+                cls_boxes, cls_segms, cls_keyps = infer_engine.im_detect_all(
+                    model, im, None, timers=timers
+                )
+            logger.info('Inference time: {:.3f}s'.format(time.time() - t))
+            for k, v in timers.items():
+                logger.info(' | {}: {:.3f}s'.format(k, v.average_time))
+            if i == 0:
+                logger.info(
+                    ' \ Note: inference on the first image will be slower than the '
+                    'rest (caches and auto-tuning need to warm up)'
+                )
+
+            vis_utils.vis_one_image(
+                im[:, :, ::-1],  # BGR -> RGB for visualization
+                im_name[:-4],
+                output_dir,
+                cls_boxes,
+                cls_segms,
+                cls_keyps,
+                dataset=dummy_coco_dataset,
+                box_alpha=0.3,
+                show_class=True,
+                thresh=0.7,
+                kp_thresh=2,
+		ext='jpg'
             )
 
-        vis_utils.vis_one_image(
-            im[:, :, ::-1],  # BGR -> RGB for visualization
-            im_name,
-            args.output_dir,
-            cls_boxes,
-            cls_segms,
-            cls_keyps,
-            dataset=dummy_coco_dataset,
-            box_alpha=0.3,
-            show_class=True,
-            thresh=0.7,
-            kp_thresh=2
-        )
+	    import pycocotools.mask as mask_util
+	    boxes, segms, keypoints, classes = vis_utils.convert_from_cls_format(cls_boxes, cls_segms, cls_keyps)
+	    if segms is not None and len(segms) > 0: 
+	       score = boxes[:, -1]
+	       index = [i for i,_sc in enumerate(score) if _sc > 0.7]
+	       mask = mask_util.decode(segms)
+	       for i in index:
+	          cv2.imwrite('{}/{}_{}.jpg'.format(output_dir, im_name.split('/')[-1][:-4], i), mask[:,:,i] * 255.0)
+	    
 
 
 if __name__ == '__main__':
