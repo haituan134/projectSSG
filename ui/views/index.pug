@@ -1,0 +1,25 @@
+extends layout
+
+block content
+    script(src='/javascripts/index.js')
+    if (result)
+        div(class='row fixed', id='result')
+            div(class='col-lg-2')
+                fieldset
+                    legend Thumbnails
+                    - for (let i = 0; i < imagePath.length; ++i) {
+                        img(src=imagePath[i], class='img-thumbnail preview', id='thumb' + i, onmouseover='changeImage(this)')
+                    - }
+            div(class='col-lg-9')
+                fieldset
+                    legend Result
+                    div(id='box', style='height: 100%')
+                        img(src=imagePath[0], class='img-responsive img-thumbnail fullimage', id='fullimage')
+    div(class='row', style='margin-top: 5px')
+        div(class='col-lg-11')
+            fieldset
+                legend Upload another image
+                form(method='POST', action='/result', class='form-inline', enctype="multipart/form-data")
+                    div(class='form-group', id='form')
+                        input(class='form-control', type='file', name='image')
+                    button(type='submit', class='btn btn-success', style='margin-left: 10px', id='submitBtn') Generate
