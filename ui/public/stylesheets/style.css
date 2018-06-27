@@ -1,0 +1,40 @@
+body {
+    padding: 50px;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+    color: #00B7FF;
+}
+
+fieldset {
+    height: 100%;
+    border: 1px groove #ddd !important;
+    padding: 0 1.4em 1.4em 1.4em !important;
+}
+
+legend {
+    font-size: 1.2em !important;
+    text-align: left !important;
+    width: inherit !important;
+    padding: 0 5px !important;
+    border-bottom: none;
+}
+
+img.preview {
+    margin-bottom: 10px;
+    max-height: 80px;
+}
+
+.fixed {
+    height: 70vh;
+}
+
+.img-responsive {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+}

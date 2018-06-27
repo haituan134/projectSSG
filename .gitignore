@@ -6,3 +6,5 @@ detectron/*
 !detectron/detectron/*
 detectron/detectron/*
 !detectron/detectron/utils/*
+
+ui/node_modules/*
